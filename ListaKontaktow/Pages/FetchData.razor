@@ -1,0 +1,269 @@
+﻿@page "/pokazKontakty"
+
+<PageTitle>Lista kontaktów</PageTitle>
+
+@using ListaKontaktow.Data
+@using Microsoft.AspNetCore.Components.Forms
+@inject KontaktServices service
+@inject KategoriaServices kservice
+@inject PodkategoriaServices pservice
+
+<h1>Lista kontaktów</h1>
+
+<div class="container">
+    <div class="row bg-light">
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Imię</th>
+                    <th>Nazwisko</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Kontakty.Any())
+                {
+                    @foreach (var kontakt in Kontakty)
+                    {
+                        <tr @onclick="(() => ShowKontaktInfo(kontakt))">
+                            <td>@kontakt.Imie</td>
+                            <td>@kontakt.Nazwisko</td>
+                            <td><button class="btn btn-danger" @onclick="(() => DeleteKontakt(kontakt))">Usuń</button></td>
+                            <td><button class="btn btn-info" @onclick="(() => SetKontaktForUpdate(kontakt))">Edytuj</button></td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6"><strong>Brak dostępnych kontaktów</strong></td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="row bg-light">
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Imię</th>
+                    <th>Nazwisko</th>
+                    <th>Email</th>
+                    <th>Hasło</th>
+                    <th>Kategoria</th>
+                    <th>Podkategoria</th>
+                    <th>Telefon</th>
+                    <th>Data Urodzenia</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ChosenKontakt!=null)
+                {
+                    <tr>
+                        <td>@ChosenKontakt.Imie</td>
+                        <td>@ChosenKontakt.Nazwisko</td>
+                        <td>@ChosenKontakt.Email</td>
+                        <td>@ChosenKontakt.Haslo</td>
+                        <td>@ChosenKontakt.Kategoria</td>
+                        <td>@ChosenKontakt.Podkategoria</td>
+                        <td>@ChosenKontakt.Telefon</td>
+                        <td>@ChosenKontakt.Data_ur.ToString("yyyy-MM-dd")</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr><td colspan="6"><strong>Wybierz kontakt, aby wyświetlić szczegóły</strong></td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="row m-5">
+        <div class="col-5 bg-light m-2 justify-content-start">
+            <div class="p-3 mb-3 bg-primary text-white text-center">Dodaj nowy kontakt</div>
+            <EditForm Model="@NewKontakt">
+                <div class="form-text">
+                    <label for="imie">Imie</label>
+                    <input type="text" id="imie" class="form-control" @bind-value="@NewKontakt.Imie" required/>
+                </div>
+                <div class="form-text">
+                    <label for="nazwisko">Nazwisko</label>
+                    <input type="text" id="nazwisko" class="form-control" @bind-value="@NewKontakt.Nazwisko" required />
+                </div>
+                <div class="form-text">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" class="form-control" @bind-value="@NewKontakt.Email" required />
+                </div>
+                <div class="form-text">
+                    <label for="haslo">Haslo</label>
+                    <input type="text" id="haslo" class="form-control" @bind-value="@NewKontakt.Haslo" required />
+                </div>
+                <div class="form-text">
+                    <label for="kategoria">Kategoria</label>
+                    <select name="kategoria" id="kategoria" @bind="@NewKontakt.Kategoria" required>
+                    @if (Kategorie.Any())
+                    {
+                            @foreach (var kategoria in Kategorie)
+                            {
+                                <option value="@kategoria.nazwa">@kategoria.nazwa</option>
+                            }
+                    }
+                    </select>
+                </div>
+                @if (NewKontakt.Kategoria == "służbowy")
+                {
+                    <div class="form-text">
+                        <label for="podkategoria">Podkategoria</label>
+                        <select name="podkategoria" id="podkategoria" @bind="@NewKontakt.Podkategoria">
+                            @if (Podkategorie.Any())
+                            {
+                                @foreach (var podkategoria in Podkategorie)
+                                {
+                                    <option value="@podkategoria.nazwa">@podkategoria.nazwa</option>
+                                }
+                            }
+                        </select>
+                </div>
+                }
+                <div class="form-text">
+                    <label for="telefon">Telefon</label>
+                    <input type="tel" id="telefon" class="form-control" @bind-value="@NewKontakt.Telefon" required />
+                </div>
+                <div class="form-text">
+                    <label for="imie">Data urodzenia</label>
+                    <input type="date" id="dataur" class="form-control" @bind-value="@NewKontakt.Data_ur" required />
+                </div>
+                <div class="text-center p-3 mb-3">
+                    <button class="btn btn-info" @onclick="AddNewKontakt"> Dodaj Kontakt</button>
+                </div>
+            </EditForm>
+        </div>
+        <div class="col-5 bg-light m-2 justify-content-end">
+            <div class="p-3 mb-1 bg-primary text-white text-center">Update Kontakt</div>
+            <EditForm Model="@UpdateKontakt">
+                <div class="form-text">
+                    <label for="imie">Imie</label>
+                    <input type="text" id="imie" class="form-control" @bind-value="@UpdateKontakt.Imie" />
+                </div>
+                <div class="form-text">
+                    <label for="nazwisko">Nazwisko</label>
+                    <input type="text" id="nazwisko" class="form-control" @bind-value="@UpdateKontakt.Nazwisko" />
+                </div>
+                <div class="form-text">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" class="form-control" @bind-value="@UpdateKontakt.Email" />
+                </div>
+                <div class="form-text">
+                    <label for="haslo">Haslo</label>
+                    <input type="text" id="haslo" class="form-control" @bind-value="@UpdateKontakt.Haslo" />
+                </div>
+                <div class="form-text">
+                    <label for="kategoria">Kategoria</label>
+                    <select name="kategoria" id="kategoria" @bind="@UpdateKontakt.Kategoria">
+                        @if (Kategorie.Any())
+                        {
+                            @foreach (var kategoria in Kategorie)
+                            {
+                                <option value="@kategoria.nazwa">@kategoria.nazwa</option>
+                            }
+                        }
+                    </select>
+                </div>
+                @if (UpdateKontakt.Kategoria == "służbowy")
+                {
+                    <div class="form-text">
+                        <label for="podkategoria">Podkategoria</label>
+                        <select name="podkategoria" id="podkategoria" @bind="@UpdateKontakt.Podkategoria">
+                            @if (Podkategorie.Any())
+                            {
+                                @foreach (var podkategoria in Podkategorie)
+                                {
+                                    <option value="@podkategoria.nazwa">@podkategoria.nazwa</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                }
+                <div class="form-text">
+                    <label for="telefon">Telefon</label>
+                    <input type="tel" id="telefon" class="form-control" @bind-value="@UpdateKontakt.Telefon" />
+                </div>
+                <div class="form-text">
+                    <label for="imie">Data urodzenia</label>
+                    <input type="date" id="dataur" class="form-control" @bind-value="@UpdateKontakt.Data_ur" />
+                </div>
+                <div class="text-center p-3 mb-3">
+                    <button class="btn btn-info" @onclick="UpdateKontaktData"> Edytuj Kontakt</button>
+                </div>
+            </EditForm>
+        </div>
+        <EditForm Model="NewPodkategoria">
+            <div class="form-text">
+                <label for="nazwa">Nazwa</label>
+                <input type="text" id="nazwa" class="form-control" @bind-value="@NewPodkategoria.nazwa" />
+                <div class="text-center p-3 mb-3">
+                    <button class="btn btn-info" @onclick="AddNewPodkategoria">Dodaj Podkategorię</button>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
+@code {
+    List<Kontakt> Kontakty = new List<Kontakt>();
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshKontakty();
+        await RefreshKategorie();
+        await RefreshPodkategorie();
+    }
+    private async Task RefreshKontakty()
+    {
+        Kontakty = await service.GetKontaktAsync();
+    }
+    public Kontakt NewKontakt { get; set; } = new Kontakt();
+    private async Task AddNewKontakt()
+    {
+        if (NewKontakt.Podkategoria == null || NewKontakt.Kategoria!="służbowy") NewKontakt.Podkategoria = "-";
+        if (!String.IsNullOrEmpty(NewKontakt.Imie) || !String.IsNullOrEmpty(NewKontakt.Nazwisko) || !String.IsNullOrEmpty(NewKontakt.Email) || !String.IsNullOrEmpty(NewKontakt.Haslo)||
+        !String.IsNullOrEmpty(NewKontakt.Kategoria) || !String.IsNullOrEmpty(NewKontakt.Telefon))
+        {
+            await service.AddKontaktAsync(NewKontakt);
+            NewKontakt = new Kontakt();
+            await RefreshKontakty();
+        }
+    }
+    Kontakt UpdateKontakt = new Kontakt();
+    private void SetKontaktForUpdate(Kontakt kontakt)
+    {
+        UpdateKontakt = kontakt;
+    }
+    public Kontakt ChosenKontakt = new Kontakt();
+    private void ShowKontaktInfo(Kontakt kontakt)
+    {
+        ChosenKontakt = kontakt;
+    }
+    private async Task UpdateKontaktData()
+    {
+        if (UpdateKontakt.Podkategoria == null || UpdateKontakt.Kategoria != "służbowy") UpdateKontakt.Podkategoria = "-";
+        await service.UpdateKontaktAsync(UpdateKontakt);
+        await RefreshKontakty();
+    }
+    private async Task DeleteKontakt(Kontakt kontakt)
+    {
+        await service.DeleteKontaktAsync(kontakt);
+        await RefreshKontakty();
+    }
+    List<Kategoria> Kategorie = new List<Kategoria>();
+    private async Task RefreshKategorie()
+    {
+        Kategorie = await kservice.GetKategoriaAsync();
+    }
+    List<Podkategoria> Podkategorie = new List<Podkategoria>();
+    private async Task RefreshPodkategorie()
+    {
+        Podkategorie = await pservice.GetPodkategoriaAsync();
+    }
+    public Podkategoria NewPodkategoria { get; set; } = new Podkategoria();
+    private async Task AddNewPodkategoria()
+    {
+        await pservice.AddPodkategoriaAsync(NewPodkategoria);
+        NewPodkategoria = new Podkategoria();
+        await RefreshPodkategorie();
+    }
+}
