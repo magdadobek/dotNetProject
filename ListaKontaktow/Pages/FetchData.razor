@@ -27,8 +27,12 @@
                         <tr @onclick="(() => ShowKontaktInfo(kontakt))">
                             <td>@kontakt.Imie</td>
                             <td>@kontakt.Nazwisko</td>
+                            <AuthorizeView>
+                                <Authorized>
                             <td><button class="btn btn-danger" @onclick="(() => DeleteKontakt(kontakt))">Usuń</button></td>
                             <td><button class="btn btn-info" @onclick="(() => SetKontaktForUpdate(kontakt))">Edytuj</button></td>
+                                </Authorized>
+                            </AuthorizeView>
                         </tr>
                     }
                 }
@@ -40,44 +44,50 @@
         </table>
     </div>
     <div class="row bg-light">
-        <table class="table table-bordered">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Imię</th>
-                    <th>Nazwisko</th>
-                    <th>Email</th>
-                    <th>Hasło</th>
-                    <th>Kategoria</th>
-                    <th>Podkategoria</th>
-                    <th>Telefon</th>
-                    <th>Data Urodzenia</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (ChosenKontakt!=null)
-                {
-                    <tr>
-                        <td>@ChosenKontakt.Imie</td>
-                        <td>@ChosenKontakt.Nazwisko</td>
-                        <td>@ChosenKontakt.Email</td>
-                        <td>@ChosenKontakt.Haslo</td>
-                        <td>@ChosenKontakt.Kategoria</td>
-                        <td>@ChosenKontakt.Podkategoria</td>
-                        <td>@ChosenKontakt.Telefon</td>
-                        <td>@ChosenKontakt.Data_ur.ToString("yyyy-MM-dd")</td>
-                    </tr>
-                }
-                else
-                {
-                    <tr><td colspan="6"><strong>Wybierz kontakt, aby wyświetlić szczegóły</strong></td></tr>
-                }
-            </tbody>
-        </table>
+        <AuthorizeView>
+            <Authorized>
+                <table class="table table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Imię</th>
+                            <th>Nazwisko</th>
+                            <th>Email</th>
+                            <th>Hasło</th>
+                            <th>Kategoria</th>
+                            <th>Podkategoria</th>
+                            <th>Telefon</th>
+                            <th>Data Urodzenia</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ChosenKontakt != null)
+                        {
+                            <tr>
+                                <td>@ChosenKontakt.Imie</td>
+                                <td>@ChosenKontakt.Nazwisko</td>
+                                <td>@ChosenKontakt.Email</td>
+                                <td>@ChosenKontakt.Haslo</td>
+                                <td>@ChosenKontakt.Kategoria</td>
+                                <td>@ChosenKontakt.Podkategoria</td>
+                                <td>@ChosenKontakt.Telefon</td>
+                                <td>@ChosenKontakt.Data_ur.ToString("yyyy-MM-dd")</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr><td colspan="6"><strong>Wybierz kontakt, aby wyświetlić szczegóły</strong></td></tr>
+                        }
+                    </tbody>
+                </table>
+            </Authorized>
+        </AuthorizeView>
     </div>
     <div class="row m-5">
         <div class="col-5 bg-light m-2 justify-content-start">
-            <div class="p-3 mb-3 bg-primary text-white text-center">Dodaj nowy kontakt</div>
             <EditForm Model="@NewKontakt">
+               <AuthorizeView>
+                    <Authorized Context="auth_context">
+                <div class="p-3 mb-3 bg-primary text-white text-center">Dodaj nowy kontakt</div>
                 <div class="form-text">
                     <label for="imie">Imie</label>
                     <input type="text" id="imie" class="form-control" @bind-value="@NewKontakt.Imie" required/>
@@ -132,11 +142,16 @@
                 <div class="text-center p-3 mb-3">
                     <button class="btn btn-info" @onclick="AddNewKontakt"> Dodaj Kontakt</button>
                 </div>
+                </Authorized>
+              </AuthorizeView>
             </EditForm>
-        </div>
+        </div>  
+        
         <div class="col-5 bg-light m-2 justify-content-end">
-            <div class="p-3 mb-1 bg-primary text-white text-center">Update Kontakt</div>
             <EditForm Model="@UpdateKontakt">
+                <AuthorizeView>
+                <Authorized Context="auth_context">
+                <div class="p-3 mb-1 bg-primary text-white text-center">Update Kontakt</div>
                 <div class="form-text">
                     <label for="imie">Imie</label>
                     <input type="text" id="imie" class="form-control" @bind-value="@UpdateKontakt.Imie" />
@@ -191,9 +206,13 @@
                 <div class="text-center p-3 mb-3">
                     <button class="btn btn-info" @onclick="UpdateKontaktData"> Edytuj Kontakt</button>
                 </div>
+                    </Authorized>
+                </AuthorizeView>
             </EditForm>
         </div>
         <EditForm Model="NewPodkategoria">
+                            <AuthorizeView>
+                <Authorized Context="auth_context">
             <div class="form-text">
                 <label for="nazwa">Nazwa</label>
                 <input type="text" id="nazwa" class="form-control" @bind-value="@NewPodkategoria.nazwa" />
@@ -201,9 +220,12 @@
                     <button class="btn btn-info" @onclick="AddNewPodkategoria">Dodaj Podkategorię</button>
                 </div>
             </div>
+                </Authorized>
+            </AuthorizeView>
         </EditForm>
     </div>
 </div>
+
 @code {
     List<Kontakt> Kontakty = new List<Kontakt>();
     protected override async Task OnInitializedAsync()

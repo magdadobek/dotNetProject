@@ -1,4 +1,7 @@
-﻿@inherits LayoutComponentBase
+﻿@using ListaKontaktow.Authentication;
+@inherits LayoutComponentBase
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager navManager
 
 <PageTitle>ListaKontaktow</PageTitle>
 
@@ -8,8 +11,26 @@
     </div>
 
     <main>
+        <div class="top-row px-4">
+            <AuthorizeView>
+                <Authorized>
+                    <a @onclick="Logout" href="javascript:void(0)">Logout</a>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/login">Zaloguj się</a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
+@code{
+    private async Task Logout()
+    {
+        var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
+        await customAuthStateProvider.UpdateAuthenticationState(null);
+        navManager.NavigateTo("/", true);
+    }
+}
